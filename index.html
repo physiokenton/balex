@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance and proprioception training</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        h2 {
+            font-size: 28px; /* Increased font size */
+        }
+
+        /* Styles for the label, input, and button within the row */
+        .input-row label,
+        .input-row input,
+        .input-row button {
+            font-size: 20px; /* Increased font size */
+            margin: 5px;
+        }
+
+        /* Styles for the input box */
+        .input-row input[type="number"] {
+            width: 80px; /* Adjusted width to fit three integers */
+            max-width: 80px; /* Limit the width */
+            font-size: 20px; /* Font size for input */
+        }
+
+        /* Styles for color selection options */
+        .colour-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .colour-option {
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Styles for the color picker */
+        .colour-picker {
+            margin-top: 5px;
+        }
+
+        /* Styles for the error message */
+        .error-message {
+            color: red; /* Set text color to red */
+        }
+
+        /* Styles for the "GO" button */
+        .go-button {
+            display: none; /* Initially hide the button */
+            margin: 20px auto; /* Center the button horizontally */
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #007bff; /* Blue background color */
+            color: white; /* Text color */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Styles for screens smaller than 600px (typical phone width) */
+        @media screen and (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 10px;
+            }
+        }
+
+        /* Styles for the modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%; /* Set the width to 80% of the viewport */
+            max-width: 80%; /* Limit the width to 80% of the viewport */
+            height: 80%; /* Set the height to 80% of the viewport */
+            max-height: 80%; /* Limit the height to 80% of the viewport */
+        }
+
+        /* Style for the close button */
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 50px;
+            cursor: pointer;
+        }
+
+        #timerSection {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        #timerSection label {
+            margin-right: 10px;
+        }
+
+        /* Set the same width for minute and second input boxes */
+        #minutes, #seconds, #speedScroller {
+            width: 45px; /* Adjust the width as needed */
+            font-size: 24px; /* Increased font size for timer display */
+        }
+
+        /* Style for the displayed color */
+        .color-box-container {
+            width: 100%; /* Set the width to 80% of the viewport */
+            height: 100%; /* Set the height to 80% of the viewport */
+            margin: auto; /* Center the color box within the modal */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .color-box {
+            min-width: 80vmin; /* 80% of the minimum of viewport width and height */
+            min-height: 80vmin; /* 80% of the minimum of viewport width and height */
+            border: none; /* Removed border */
+            border-radius: 50%; /* Circular shape */
+            transition: transform 0.5s ease-in-out; /* Animation transition */
+        }
+
+        /* Style for the speed scroller */
+        .speed-scroller {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .speed-label {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .speed-input {
+            width: 40px;
+            text-align: center;
+        }
+
+        /* Animation for scrolling up */
+        .scroll-up {
+            transform: translateY(-100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Balance and proprioception training</h2>
+        <form onsubmit="updateColourOptions(); return false;"> <!-- Added form element -->
+            <div class="input-row">
+                <label for="colourCount">Enter the number of colours:</label>
+                <input type="number" id="colourCount" name="colourCount" step="1" min="1" max="15">
+                <button id="submitButton" type="submit">Submit</button> <!-- Added type attribute to the button -->
+            </div>
+        </form> <!-- Close form element -->
+        
+        <!-- Colour options container -->
+        <div id="colourOptions" class="colour-options"></div>
+
+        <!-- "GO" button -->
+        <button class="go-button" onclick="openModal()">GO</button>
+        
+        <!-- Modal -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <!-- Close button -->
+                <span class="close" onclick="closeModal()">&times;</span>
+                <!-- Modal content -->
+                <div id="timerSection">
+                    <!-- Use input elements with inputmode for numeric input -->
+                    <input type="number" id="minutes" min="0" value="0" inputmode="numeric" style="font-size: 24px;"> <!-- Increased font size -->
+                    <input type="number" id="seconds" min="0" max="59" value="0" inputmode="numeric" style="font-size: 24px;"> <!-- Increased font size -->
+                    <button id="startPauseButton" onclick="startPauseTimer()" style="font-size: 24px;">Start</button> <!-- Increased font size -->
+                    <button id="resetButton" onclick="resetTimer()" style="font-size: 24px;">Reset</button> <!-- Increased font size -->
+                </div>
+                <div class="color-box-container">
+                    <div class="color-box" id="colorDisplay"></div> <!-- Added color display box -->
+                </div>
+                <div class="speed-scroller">
+                    <label class="speed-label">Speed</label>
+                    <input class="speed-input" type="number" id="speedScroller" min="1" max="100" value="20" onwheel="adjustSpeed(event)">
+                </div>
+            </div>
+        </div>
+        <!-- Footer section for copyright information -->
+    	<footer>
+        	<p>&copy; <span id="currentYear"></span> Kenton Chan. All rights reserved.</p>
+    	</footer>
+    </div>
+
+    <script>
+        let selectedColours = []; // Store selected colours
+        let timerInterval;
+        let timerRunning = false;
+        let minutes = 0;
+        let seconds = 0;
+        let speed = 20; // Default speed set to 20
+
+        // Separate interval for color changes
+        let colorChangeInterval;
+        let colorChangePaused = false; // Flag to track color change pause state
+
+        function startPauseTimer() {
+            const startPauseButton = document.getElementById("startPauseButton");
+            const speedScroller = document.getElementById("speedScroller"); // Added speed scroller element
+
+            if (!timerRunning) {
+                // Start the countdown timer
+                minutes = parseInt(document.getElementById("minutes").value);
+                seconds = parseInt(document.getElementById("seconds").value);
+
+                if (isNaN(minutes)) minutes = 0;
+                if (isNaN(seconds)) seconds = 0;
+
+                timerInterval = setInterval(function () {
+                    if (seconds === 0 && minutes === 0) {
+                        clearInterval(timerInterval);
+                        timerRunning = false;
+                        startPauseButton.textContent = "Start";
+                        colorChangePaused = true; // Pause color change when timer ends
+                    } else {
+                        if (seconds === 0) {
+                            minutes--;
+                            seconds = 59;
+                        } else {
+                            seconds--;
+                        }
+                        updateInputFields();
+                    }
+                }, 1000); // 1 second interval
+
+                // Start the color change timer
+                speed = parseInt(speedScroller.value); // Update speed from the scroller
+
+                if (isNaN(speed) || speed < 1) speed = 1;
+
+                // Calculate the interval based on speed (changes per minute)
+                const colors = selectedColours.length;
+                const colorChangeCount = speed * (minutes + seconds / 60); // Total color changes needed
+                const interval = (minutes * 60 + seconds) * 1000 / colorChangeCount; // Milliseconds between color changes
+
+                colorChangeInterval = setInterval(function () {
+                    if (!colorChangePaused) {
+                        displayRandomColor(); // Display a random color on each tick if not paused
+                    }
+                }, interval);
+
+                timerRunning = true;
+                startPauseButton.textContent = "Pause";
+                colorChangePaused = false; // Reset color change pause state
+            } else {
+                // Pause both timers
+                clearInterval(timerInterval);
+                clearInterval(colorChangeInterval);
+                timerRunning = false;
+                startPauseButton.textContent = "Resume";
+                colorChangePaused = true; // Pause color change when timer is paused
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            clearInterval(colorChangeInterval);
+            timerRunning = false;
+            document.getElementById("minutes").value = "0";
+            document.getElementById("seconds").value = "0";
+            document.getElementById("startPauseButton").textContent = "Start";
+            document.getElementById("speedScroller").value = "20"; // Set speed back to 20
+            colorChangePaused = true; // Pause color change when timer is reset
+        }
+
+        // Add event listeners to handle scrolling for minutes and seconds
+        document.getElementById("minutes").addEventListener("wheel", function (event) {
+            minutes += event.deltaY > 0 ? 1 : -1;
+            if (minutes < 0) minutes = 0;
+            document.getElementById("minutes").value = minutes;
+        });
+
+        document.getElementById("seconds").addEventListener("wheel", function (event) {
+            seconds += event.deltaY > 0 ? 1 : -1;
+            if (seconds < 0) seconds = 0;
+            if (seconds > 59) seconds = 59;
+            document.getElementById("seconds").value = seconds;
+        });
+
+        // Function to adjust the speed using the wheel event
+        function adjustSpeed(event) {
+            speed += event.deltaY > 0 ? -1 : 1;
+            if (speed < 1) speed = 1;
+            document.getElementById("speedScroller").value = speed;
+        }
+
+        function updateInputFields() {
+            document.getElementById("minutes").value = minutes;
+            document.getElementById("seconds").value = seconds;
+        }
+
+        function updateColourOptions() {
+            const inputElement = document.getElementById("colourCount");
+            const colourOptionsContainer = document.getElementById("colourOptions");
+            const goButton = document.querySelector(".go-button");
+            const number = parseInt(inputElement.value);
+
+            // Clear previous options
+            colourOptionsContainer.innerHTML = '';
+
+            // Remove any existing error message
+            const errorMessage = document.querySelector(".error-message");
+            if (errorMessage) {
+                errorMessage.remove();
+            }
+
+            if (isNaN(number) || number < 1 || number > 15) {
+                // Show error message
+                const errorText = document.createElement("p");
+                errorText.className = "error-message";
+                errorText.textContent = "Please enter a valid whole number between 1 and 15.";
+                document.querySelector(".input-row").appendChild(errorText);
+                goButton.style.display = "none"; // Hide the "GO" button if the input is invalid
+                return; // Exit function if the input is invalid
+            }
+
+            // Generate color selection options with color pickers
+            for (let i = 1; i <= number; i++) {
+                const colourOption = document.createElement("div");
+                colourOption.className = "colour-option";
+                const selectedColour = selectedColours[i - 1] || "#000000";
+                colourOption.innerHTML = `
+                    Colour ${i}:
+                    <input class="colour-picker" type="color" id="colourPicker${i}" value="${selectedColour}">
+                `;
+                colourOptionsContainer.appendChild(colourOption);
+
+                // Attach an event listener to save selected colors
+                const colourPicker = colourOption.querySelector(`#colourPicker${i}`);
+                colourPicker.addEventListener("input", () => {
+                    selectedColours[i - 1] = colourPicker.value;
+                });
+            }
+
+            goButton.style.display = "block"; // Show the "GO" button if the input is valid
+            // Change button text to "Update" after the first submission
+            document.getElementById("submitButton").textContent = "Update";
+        }
+
+        function openModal() {
+            const modal = document.getElementById("myModal");
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("myModal");
+            modal.style.display = "none";
+            
+            // Check if the timer is running, and if so, treat it as a pause button press
+            if (timerRunning) {
+                startPauseTimer();
+            }
+        }
+
+        function displayRandomColor() {
+            const colorDisplay = document.getElementById("colorDisplay");
+            const colorBox = document.querySelector(".color-box");
+
+            // Get a random color
+            const randomColor = selectedColours[Math.floor(Math.random() * selectedColours.length)];
+
+            // Apply the random color to the color box
+            colorBox.style.backgroundColor = randomColor;
+
+            // Add the scrolling-up animation class
+            colorBox.classList.add("scroll-up");
+
+            // Remove the animation class after the animation completes
+            setTimeout(() => {
+                colorBox.classList.remove("scroll-up");
+            }, 500); // Adjust the duration (in milliseconds) to match your animation
+        }
+        
+        // Get the current year
+        const currentYear = new Date().getFullYear();
+
+        // Find the <span> element with the id "currentYear"
+        const yearElement = document.getElementById("currentYear");
+
+        // Update the content of the <span> element with the current year
+        yearElement.textContent = currentYear;
+    </script>
+</body>
+</html>
